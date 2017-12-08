@@ -43,12 +43,26 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 
     // iterate through all the top-level contours,
     // draw each connected component with its own random color
-    int idx = 0;
-    if (!hierarchy.empty()) {
-        for ( ; idx >= 0; idx = hierarchy[idx][0]) {
-            Scalar color( rand()&255, rand()&255, rand()&255 );
-            drawContours( dst, contours, idx, color, CV_FILLED, 8, hierarchy);
+
+    if (contours.empty()) {
+        // if the ball is lost
+    }
+    else {
+        unsigned int idx = 0;
+        unsigned int largest_idx = 0;
+        double largest_area = 0;
+        for ( ; idx < contours.size(); ++idx) {
+            double area = contourArea(contours[idx], false);
+            if (area > largest_area) {
+                largest_area = area;
+                largest_idx  = idx;
+            }
         }
+//        for ( ; idx >= 0; idx = hierarchy[idx][0]) {
+//            Scalar color( rand()&255, rand()&255, rand()&255 );
+//            drawContours( dst, contours, idx, color, CV_FILLED, 8, hierarchy);
+//        }
+        drawContours(dst, contours, largest_idx, Scalar(255, 255, 0), CV_FILLED, 8);
         namedWindow( "Components", 1 );
         imshow("Components", dst );
     }
