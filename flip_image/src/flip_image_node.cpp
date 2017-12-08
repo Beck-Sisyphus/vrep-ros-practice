@@ -16,7 +16,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     Mat frame, frame_flipped;
     frame = bridge_ptr->image;
     flip(frame, frame_flipped, 1);
-    imshow("flipped", frame);
+//    imshow("flipped", frame_flipped);
     sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", frame_flipped).toImageMsg();
     pub_flipped_image.publish(msg);
     cv::waitKey(10);
