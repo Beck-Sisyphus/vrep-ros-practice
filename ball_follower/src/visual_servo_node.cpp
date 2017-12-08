@@ -14,7 +14,7 @@ ros::Publisher pub_cmd;
 
 void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
-    cv_bridge::CvImagePtr bridge_ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::RGB16);
+    cv_bridge::CvImagePtr bridge_ptr = cv_bridge::toCvCopy(img_msg, img_msg->encoding);
     Mat frame, frame_filtered;
     frame = bridge_ptr->image;
     if(frame.empty()) {
@@ -22,9 +22,9 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     }
 
     // Detecting Yellow
-    inRange(frame, Scalar(240, 240, 15), Scalar(255, 255, 0), frame_filtered);
-    imshow("filtered origin", frame);
-//    imshow("filtered filtered", frame_filtered);
+    inRange(frame, Scalar(200, 200, 60), Scalar(255, 255, 0), frame_filtered);
+//    imshow("filtered origin", frame);
+    imshow("filtered filtered", frame_filtered);
 
 
     waitKey(10);
