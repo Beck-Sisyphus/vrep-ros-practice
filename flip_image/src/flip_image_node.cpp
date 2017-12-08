@@ -10,14 +10,14 @@ ros::Publisher pub_flipped_image;
 
 void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
-//    cv_bridge::CvImagePtr bridge_ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::RGB8);
-    cv_bridge::CvImagePtr bridge_ptr = cv_bridge::toCvCopy(img_msg, img_msg->encoding);
+    cv_bridge::CvImagePtr bridge_ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::BGR8);
+//    cv_bridge::CvImagePtr bridge_ptr = cv_bridge::toCvCopy(img_msg, img_msg->encoding);
 
     Mat frame, frame_flipped;
     frame = bridge_ptr->image;
     flip(frame, frame_flipped, 1);
-//    imshow("flipped", frame_flipped);
-    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), img_msg->encoding, frame_flipped).toImageMsg();
+    imshow("flipped", frame);
+    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", frame_flipped).toImageMsg();
     pub_flipped_image.publish(msg);
     cv::waitKey(10);
 }

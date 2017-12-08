@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="rostopic" type="rostopic" name="rostopic" args="pub "/>
+</launch>
