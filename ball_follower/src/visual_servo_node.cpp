@@ -23,7 +23,8 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 
     // Detecting Yellow
     inRange(frame, Scalar(240, 240, 15), Scalar(255, 255, 0), frame_filtered);
-    imshow("filtered yellow", frame_filtered);
+    imshow("filtered origin", frame);
+//    imshow("filtered filtered", frame_filtered);
 
 
     waitKey(10);
