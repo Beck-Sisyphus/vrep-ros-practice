@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <vector>
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <std_msgs/Bool.h>
@@ -7,27 +7,51 @@
 #include <geometry_msgs/Twist.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core/core.hpp>
 
 using namespace cv;
+using namespace std;
 ros::Publisher pub_cmd;
 //ros::Publisher pub_laser;
 double Kp_angle, Kd_angle, Ki_angle, Kp_vel, Kd_vel, Ki_vel;
-Scalar lower_bound, upper_bound;
+Scalar bgr_lower_bound, bgr_upper_bound;
 
 void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
-    cv_bridge::CvImagePtr bridge_ptr = cv_bridge::toCvCopy(img_msg, img_msg->encoding);
     Mat frame, frame_filtered;
+    Mat dst;
+
+    cv_bridge::CvImagePtr bridge_ptr = cv_bridge::toCvCopy(img_msg, img_msg->encoding);
+
     frame = bridge_ptr->image;
     if(frame.empty()) {
-        ROS_INFO("Didn't get the cv_bridge image");
+        cout << "Didn't get the cv_bridge image" << endl;
     }
+    dst = Mat::zeros(frame.rows, frame.cols, CV_8UC3);
 
-    // Detecting Yellow
-    inRange(frame, lower_bound, upper_bound, frame_filtered);
-//    imshow("filtered origin", frame);
-    imshow("filtered filtered", frame_filtered);
+    // binary frame
+    inRange(frame, bgr_lower_bound, bgr_upper_bound, frame_filtered);
+    imshow("filtered", frame_filtered);
 
+    // Detecting Yellow contour
+    vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+    findContours(frame_filtered, contours, hierarchy,
+                 CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0,0));
+
+    // iterate through all the top-level contours,
+    // draw each connected component with its own random color
+    int idx = 0;
+    if (!hierarchy.empty()) {
+        for ( ; idx >= 0; idx = hierarchy[idx][0]) {
+            Scalar color( rand()&255, rand()&255, rand()&255 );
+            drawContours( dst, contours, idx, color, CV_FILLED, 8, hierarchy);
+        }
+        namedWindow( "Components", 1 );
+        imshow("Components", dst );
+    }
 
     waitKey(10);
 }
@@ -54,8 +78,8 @@ int main(int argc, char **argv)
     n.param("upper_bound_color_g", g_upper, 255);
     n.param("upper_bound_color_r", r_upper, 255);
     
-    lower_bound << b_lower, g_lower, r_lower;
-    upper_bound << b_upper, g_upper, r_upper;
+    bgr_lower_bound << b_lower, g_lower, r_lower;
+    bgr_upper_bound << b_upper, g_upper, r_upper;
     ros::spin();
     /*
     pub_laser = n.advertise<std_msgs::Bool>("follower_laser_switch", 100);
