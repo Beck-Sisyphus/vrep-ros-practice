@@ -11,6 +11,8 @@
 using namespace cv;
 ros::Publisher pub_cmd;
 //ros::Publisher pub_laser;
+double Kp_angle, Kd_angle, Ki_angle, Kp_vel, Kd_vel, Ki_vel;
+Scalar lower_bound, upper_bound;
 
 void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
@@ -22,7 +24,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     }
 
     // Detecting Yellow
-    inRange(frame, Scalar(200, 200, 60), Scalar(255, 255, 0), frame_filtered);
+    inRange(frame, lower_bound, upper_bound, frame_filtered);
 //    imshow("filtered origin", frame);
     imshow("filtered filtered", frame_filtered);
 
@@ -38,6 +40,22 @@ int main(int argc, char **argv)
     ros::Subscriber sub = n.subscribe("/flipped_image", 100, img_callback);
     pub_cmd = n.advertise<geometry_msgs::Twist>("/vrep/cmd_vel", 10);
 
+    int r_lower, g_lower, b_lower, r_upper, g_upper, b_upper;
+    n.param("Kp_angle", Kp_angle, 5.0);
+    n.param("Kd_angle", Kd_angle, 0.0);
+    n.param("Ki_angle", Ki_angle, 0.0);
+    n.param("Kp_vel", Kp_vel, 5.0);
+    n.param("Kd_vel", Kd_vel, 0.0);
+    n.param("Ki_vel", Ki_vel, 0.0);
+    n.param("lower_bound_color_b", b_lower, 0);
+    n.param("lower_bound_color_g", g_lower, 180);
+    n.param("lower_bound_color_r", r_lower, 180);
+    n.param("upper_bound_color_b", b_upper, 80);
+    n.param("upper_bound_color_g", g_upper, 255);
+    n.param("upper_bound_color_r", r_upper, 255);
+    
+    lower_bound << b_lower, g_lower, r_lower;
+    upper_bound << b_upper, g_upper, r_upper;
     ros::spin();
     /*
     pub_laser = n.advertise<std_msgs::Bool>("follower_laser_switch", 100);
