@@ -1,0 +1,11 @@
+digraph G {
+"base_link" -> "laser_link"[label="Broadcaster: /vrep_ros_interface\nAverage rate: 21.333 Hz\nMost recent transform: 2.600 ( 0.000 sec old)\nBuffer length: 0.750 sec\n"];
+"nav" -> "base_link"[label="Broadcaster: /nav2base_broadcaster\nAverage rate: 9.333 Hz\nMost recent transform: 2.700 ( -0.100 sec old)\nBuffer length: 0.750 sec\n"];
+"world" -> "map"[label="Broadcaster: /world2map_broadcaster\nAverage rate: 9.333 Hz\nMost recent transform: 2.700 ( -0.100 sec old)\nBuffer length: 0.750 sec\n"];
+"map" -> "nav"[label="Broadcaster: /hector_mapping\nAverage rate: 21.429 Hz\nMost recent transform: 2.550 ( 0.050 sec old)\nBuffer length: 0.700 sec\n"];
+"map" -> "scanmatcher_frame"[label="Broadcaster: /hector_mapping\nAverage rate: 21.429 Hz\nMost recent transform: 2.550 ( 0.050 sec old)\nBuffer length: 0.700 sec\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 2.600"[ shape=plaintext ] ;
+ }->"world";
+}
