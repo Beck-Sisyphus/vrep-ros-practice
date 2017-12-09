@@ -22,6 +22,8 @@ Scalar bgr_lower_bound, bgr_upper_bound;
 arm_pid_instance_f32 angle_pid, vel_pid;
 float angle_gap, distance_gap;
 
+bool target_detected;
+
 void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
     Mat frame, frame_filtered;
@@ -48,8 +50,10 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     if (contours.empty()) {
         // if the ball is lost
         angle_gap = 0;
+        target_detected = false;
     }
     else {
+        target_detected = true;
         unsigned int idx = 0;
         unsigned int largest_idx = 0;
         double largest_area = 0;
@@ -64,11 +68,11 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         Rect bound = boundingRect(contours[largest_idx]);
         rectangle(frame_filtered, bound, Scalar(100, 255, 100), 5, 8, 0);
 
-        //imshow("filtered", frame_filtered);
+        imshow("filtered", frame_filtered);
         angle_gap = bound.x + bound.width / 2 - frame_filtered.cols / 2;
         distance_gap = (float)(sqrt(bound.area()) - dis_offset);
-        cout << "x: " << angle_gap << endl;
-        cout << "dis" << distance_gap << endl;
+//        cout << "x: " << angle_gap << endl;
+//        cout << "dis" << distance_gap << endl;
     }
     waitKey(1);
 }
@@ -96,7 +100,7 @@ int main(int argc, char **argv)
     n.param("upper_bound_color_b", b_upper, 80);
     n.param("upper_bound_color_g", g_upper, 255);
     n.param("upper_bound_color_r", r_upper, 255);
-    
+
     bgr_lower_bound << b_lower, g_lower, r_lower;
     bgr_upper_bound << b_upper, g_upper, r_upper;
 
@@ -118,9 +122,11 @@ int main(int argc, char **argv)
     geometry_msgs::Twist feedback_output;
     while(ros::ok())
     {
-        feedback_output.linear.x = vel_offset + arm_pid_f32(&vel_pid, distance_gap);
-        feedback_output.angular.z = arm_pid_f32(&angle_pid, angle_gap);
-        pub_cmd.publish(feedback_output);
+        if (target_detected) {
+            feedback_output.linear.x = vel_offset + arm_pid_f32(&vel_pid, distance_gap);
+            feedback_output.angular.z = arm_pid_f32(&angle_pid, angle_gap);
+            pub_cmd.publish(feedback_output);
+        }
 
         loop_rate.sleep();
 
@@ -128,13 +134,3 @@ int main(int argc, char **argv)
     }
 
 }
-
-// iterate through all the top-level contours,
-// draw each connected component with its own random color
-//        for ( ; idx >= 0; idx = hierarchy[idx][0]) {
-//            Scalar color( rand()&255, rand()&255, rand()&255 );
-//            drawContours( dst, contours, idx, color, CV_FILLED, 8, hierarchy);
-//        }
-//        drawContours(dst, contours, largest_idx, Scalar(255, 255, 0), CV_FILLED, 8);
-//        namedWindow( "Components", 1 );
-//        imshow("Components", dst );

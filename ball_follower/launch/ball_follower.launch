@@ -1,26 +1,25 @@
 <launch>
-    <node pkg="rostopic" type="rostopic" name="rostopic" args="pub /vrep/laser_switch std_msgs/Bool 0">
-    </node>
+    <node pkg="rostopic" type="rostopic" name="rostopic_las" args="pub /vrep/laser_switch std_msgs/Bool 0" output="screen"/>
+	<node pkg="rostopic" type="rostopic" name="rostopic_cam" args="pub /vrep/camera_switch std_msgs/Bool 1" output="screen"/>
 
-    <node pkg="flip_image" type="flip_image_node" name="flip_image_node" output="screen">
-    </node>
+    <node pkg="flip_image" type="flip_image_node" name="flip_image_node" output="screen"/>
 
     <node pkg="ball_follower" type="ball_follower_node" name="ball_follower_node" output="screen">
-	<param name="Gain_angle" type="double" value="1.0"/>
-	<param name="Kp_angle" type="double" value="-0.03"/>
-	<param name="Kd_angle" type="double" value="0.0"/>
-	<param name="Ki_angle" type="double" value="0.0"/>
-	<param name="vel_offset" type="double" value="0.5"/>
-	<param name="dis_offset" type="double" value="230.0"/>
-	<param name="Kp_vel" type="double" value="-0.01"/>
-	<param name="Kd_vel" type="double" value="0"/>
-	<param name="Ki_vel" type="double" value="0.0"/>
-	<param name="lower_bound_color_b" type="int" value="0"/>
-	<param name="lower_bound_color_g" type="int" value="180"/>
-	<param name="lower_bound_color_r" type="int" value="180"/>
-	<param name="upper_bound_color_b" type="int" value="80"/>
-	<param name="upper_bound_color_g" type="int" value="255"/>
-	<param name="upper_bound_color_r" type="int" value="255"/>
+		<param name="Gain_angle" type="double" value="1.0"/>
+		<param name="Kp_angle" type="double" value="-0.03"/>
+		<param name="Kd_angle" type="double" value="0.0"/>
+		<param name="Ki_angle" type="double" value="0.0"/>
+		<param name="vel_offset" type="double" value="0.5"/>
+		<param name="dis_offset" type="double" value="230.0"/>
+		<param name="Kp_vel" type="double" value="-0.01"/>
+		<param name="Kd_vel" type="double" value="0"/>
+		<param name="Ki_vel" type="double" value="0.0"/>
+		<param name="lower_bound_color_b" type="int" value="0"/>
+		<param name="lower_bound_color_g" type="int" value="180"/>
+		<param name="lower_bound_color_r" type="int" value="180"/>
+		<param name="upper_bound_color_b" type="int" value="80"/>
+		<param name="upper_bound_color_g" type="int" value="255"/>
+		<param name="upper_bound_color_r" type="int" value="255"/>
     </node>
 
 </launch>
