@@ -4,6 +4,7 @@
 #include <std_msgs/Bool.h>
 #include <sensor_msgs/Image.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/Pose.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -47,6 +48,13 @@ Mat templ4_1st;
 Mat templ5_1st;
   Mat templ5_2nd;
  Mat templ5_3rd;
+
+ bool dis = false;
+ Point matchLoc;
+ Mat templ;
+
+Mat result;
+
 
 void MatchingMethod(Mat img, Mat templ1, Mat templ2, Mat templ3, int type)
 {
@@ -94,20 +102,14 @@ void MatchingMethod(Mat img, Mat templ1, Mat templ2, Mat templ3, int type)
   minMaxLoc( result3, &minVal3, &maxVal3, &minLoc3, &maxLoc3, Mat() );   
   
 
- // std::cout<<"type"<<type<<"Min1  "<<minVal1<<std::endl;
- // std::cout<<"type"<<type<<"Min2  "<<minVal2<<std::endl;
- // std::cout<<"type"<<type<<"Min3  "<<minVal3<<std::endl;
-imshow( result_window, result1 );
-imshow( result_window, result2 );
-imshow( result_window, result3 );
 
 
 
 
 
-Point matchLoc;
-Mat templ;
-Mat result;
+
+
+
 double minVal;
 
 if (minVal2<minVal1&&minVal2<minVal3){
@@ -133,7 +135,7 @@ else{
 
 
 
-  bool dis = false;
+  dis = false;
   switch(type){
     case 1: dis=minVal < th1; break;
     case 2: dis=minVal < th2; break;
@@ -144,13 +146,23 @@ else{
 
   if(dis){
   rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
-  rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
- 
+ // rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+   geometry_msgs::Pose message;
+   message.position.x = matchLoc.x;
+   message.position.y = matchLoc.y;
+   message.position.z = 0;
+   message.orientation.x  = matchLoc.x + templ.cols;
+   message.orientation.y = matchLoc.y + templ.rows;
+   message.orientation.z = 0;
+   message.orientation.w =0;
+
+   pub_cmd.publish(message);
+
 }
 
 
   imshow( image_window, img_display );
-  imshow( result_window, result );
+ // imshow( result_window, result );
 
   waitKey(10);
 
@@ -168,37 +180,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         std::cout<<"didn't received cv_bridge image"<<std::endl;
     }
 
- //    waitKey(10);
-
-    // to be modified
-    // Mat original_templ = imread ("/home/shengrui/catkin_ws/src/picture_sample/pic001.jpg");
-    
-    // Mat templ_2nd;
-    // //pyrDown( original_templ, templ_2nd, Size( original_templ.cols/2, original_templ.rows/2) );
-    // resize(original_templ, templ_2nd, Size(120,120), 0, 0);
-    // namedWindow( "templ_2nd", CV_WINDOW_AUTOSIZE );
-    // imshow("templ_2nd",templ_2nd);
-    
-    // Mat templ_3rd;
-    // resize(original_templ, templ_3rd, Size(150,150), 0, 0);
-    // namedWindow( "templ_3rd", CV_WINDOW_AUTOSIZE );
-    // imshow("templ_3rd",templ_3rd);
-    
-
-
-    
       
-
-    //  namedWindow( image_window, CV_WINDOW_AUTOSIZE );
-    //  namedWindow( result_window, CV_WINDOW_AUTOSIZE );
-
-     
-
-     
-
-
- 
-     
      MatchingMethod(img,templ1_1st,templ1_2nd,templ1_3rd,1);
      cv::waitKey(10);
 
@@ -226,6 +208,7 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "image_recognition");
     ros::NodeHandle n("~");
+    pub_cmd = n.advertise<geometry_msgs::Pose>("image_reconition_result",100);
 
   
 
@@ -302,7 +285,8 @@ int main(int argc, char **argv)
 
 
     ros::Subscriber sub = n.subscribe("/flipped_image", 100, img_callback);
-    // pub_cmd = n.advertise<geometry_msgs::Twist>("/vrep/cmd_vel", 10);
+
+  
 
     ros::spin();
     
