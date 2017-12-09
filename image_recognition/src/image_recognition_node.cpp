@@ -23,11 +23,32 @@ char* result_window = "Result window";
 int match_method = CV_TM_SQDIFF ;
 int max_Trackbar = 5;
 double th1 = 1.5e08;
+double th2 = 2.1e08;
+double th3 = 1e08;
+double th4 = 1.2e08;
+double th5 = 2e08;
 
- Mat templ_2nd;
- Mat templ_3rd;
+Mat templ1_1st;
+ Mat templ1_2nd;
+ Mat templ1_3rd;
 
-void MatchingMethod(Mat img, Mat templ1, Mat templ2, int type)
+Mat templ2_1st;
+  Mat templ2_2nd;
+ Mat templ2_3rd;
+
+Mat templ3_1st;
+  Mat templ3_2nd;
+ Mat templ3_3rd;
+
+Mat templ4_1st;
+  Mat templ4_2nd;
+ Mat templ4_3rd;
+
+Mat templ5_1st;
+  Mat templ5_2nd;
+ Mat templ5_3rd;
+
+void MatchingMethod(Mat img, Mat templ1, Mat templ2, Mat templ3, int type)
 {
   /// Source image to display
 
@@ -61,10 +82,27 @@ void MatchingMethod(Mat img, Mat templ1, Mat templ2, int type)
 
 
   minMaxLoc( result2, &minVal2, &maxVal2, &minLoc2, &maxLoc2, Mat() );   
+
+   Mat result3;
+  result3.create( result_rows, result_cols, CV_32FC1 );
+
+  matchTemplate( img, templ3, result3, match_method );
+ 
+  double minVal3=10; double maxVal3=-10; Point minLoc3; Point maxLoc3;
+
+
+  minMaxLoc( result3, &minVal3, &maxVal3, &minLoc3, &maxLoc3, Mat() );   
   
 
- std::cout<<"Min1"<<minVal1<<std::endl;
- std::cout<<"Min2"<<minVal2<<std::endl;
+ // std::cout<<"type"<<type<<"Min1  "<<minVal1<<std::endl;
+ // std::cout<<"type"<<type<<"Min2  "<<minVal2<<std::endl;
+ // std::cout<<"type"<<type<<"Min3  "<<minVal3<<std::endl;
+imshow( result_window, result1 );
+imshow( result_window, result2 );
+imshow( result_window, result3 );
+
+
+
 
 
 Point matchLoc;
@@ -72,11 +110,17 @@ Mat templ;
 Mat result;
 double minVal;
 
-if (minVal2<minVal1){
+if (minVal2<minVal1&&minVal2<minVal3){
    minVal = minVal2;
    matchLoc = minLoc2;
    templ = templ2;
    result = result2;
+}
+else if (minVal3<minVal1&&minVal3<minVal2){
+  minVal = minVal3;
+  matchLoc = minLoc3;
+  templ = templ3;
+  result = result3;
 }
 else{
   minVal = minVal1;
@@ -85,13 +129,20 @@ else{
   result = result1;
 }
 
+ std::cout<<"type"<<type<<"Min  "<<minVal<<std::endl;
 
-  double th;
+
+
+  bool dis = false;
   switch(type){
-    case 1: th = th1; break;
+    case 1: dis=minVal < th1; break;
+    case 2: dis=minVal < th2; break;
+    case 3: dis=minVal < th3; break;
+    case 4: dis=minVal < th4; break;
+    case 5: dis=minVal < th5; break;
   }
 
-  if(minVal< th){
+  if(dis){
   rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
   rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
  
@@ -147,11 +198,22 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 
 
  
-
-     MatchingMethod(img,templ_2nd,templ_3rd,1);
-
+     
+     MatchingMethod(img,templ1_1st,templ1_2nd,templ1_3rd,1);
      cv::waitKey(10);
 
+     MatchingMethod(img,templ2_1st,templ2_2nd,templ2_3rd,2);
+     cv::waitKey(10);
+
+     MatchingMethod(img,templ3_1st,templ3_2nd,templ3_3rd,3);
+     cv::waitKey(10);
+
+     MatchingMethod(img,templ4_1st,templ4_2nd,templ4_3rd,4);
+     cv::waitKey(10);
+
+     MatchingMethod(img,templ5_1st,templ5_2nd,templ5_3rd,5);
+     cv::waitKey(10);
+     
 
 
 }
@@ -168,25 +230,64 @@ int main(int argc, char **argv)
   
 
     // to be modified
-    Mat original_templ = imread ("/home/shengrui/catkin_ws/src/picture_sample/pic001.jpg");
+    Mat original_templ1 = imread ("/home/shengrui/catkin_ws/src/picture_sample/pic001.jpg");
+    Mat original_templ2 = imread ("/home/shengrui/catkin_ws/src/picture_sample/pic002.jpg");
     
-    
-          
-    
+    Mat original_templ3 = imread ("/home/shengrui/catkin_ws/src/picture_sample/pic003.jpg");
+   flip(original_templ3, original_templ3, 1); 
    
+
+    Mat original_templ4 = imread ("/home/shengrui/catkin_ws/src/picture_sample/pic004.jpg");
+    Mat original_templ5 = imread ("/home/shengrui/catkin_ws/src/picture_sample/pic005.jpg");  
+   flip(original_templ5, original_templ5, 1); 
+   
+
+
     // put templ_2nd as global variable, becuase we cannot pass it to call_back function
-    resize(original_templ, templ_2nd, Size(120,120), 0, 0);
-    namedWindow( "templ_2nd", CV_WINDOW_AUTOSIZE );
-    imshow("templ_2nd",templ_2nd);
-    
-   
-    resize(original_templ, templ_3rd, Size(150,150), 0, 0);
-    namedWindow( "templ_3rd", CV_WINDOW_AUTOSIZE );
-    imshow("templ_3rd",templ_3rd);
-    
-
+    resize(original_templ1,templ1_1st,Size(250,250),0,0);
+    resize(original_templ1, templ1_2nd, Size(120,120), 0, 0);
+    namedWindow( "templ1_2nd", CV_WINDOW_AUTOSIZE );
+    imshow("templ1_2nd",templ1_2nd);
+    resize(original_templ1, templ1_3rd, Size(150,150), 0, 0);
+    namedWindow( "templ1_3rd", CV_WINDOW_AUTOSIZE );
+    imshow("templ1_3rd",templ1_3rd);
 
     
+    resize(original_templ2,templ2_1st,Size(250,250),0,0);
+    resize(original_templ2, templ2_2nd, Size(120,120), 0, 0);
+    namedWindow( "templ2_2nd", CV_WINDOW_AUTOSIZE );
+    imshow("templ2_2nd",templ2_2nd);
+    resize(original_templ2, templ2_3rd, Size(150,150), 0, 0);
+    namedWindow( "templ2_3rd", CV_WINDOW_AUTOSIZE );
+    imshow("templ2_3rd",templ2_3rd);
+
+
+    resize(original_templ3,templ3_1st,Size(250,250),0,0);
+    resize(original_templ3, templ3_2nd, Size(120,120), 0, 0);
+    namedWindow( "templ3_2nd", CV_WINDOW_AUTOSIZE );
+    imshow("templ3_2nd",templ3_2nd);
+    resize(original_templ3, templ3_3rd, Size(150,150), 0, 0);
+    namedWindow( "templ3_3rd", CV_WINDOW_AUTOSIZE );
+    imshow("templ3_3rd",templ3_3rd);
+
+    resize(original_templ4,templ4_1st,Size(250,250),0,0);
+    resize(original_templ4, templ4_2nd, Size(120,120), 0, 0);
+    namedWindow( "templ4_2nd", CV_WINDOW_AUTOSIZE );
+    imshow("templ4_2nd",templ4_2nd);
+    resize(original_templ4, templ4_3rd, Size(150,150), 0, 0);
+    namedWindow( "templ4_3rd", CV_WINDOW_AUTOSIZE );
+    imshow("templ4_3rd",templ4_3rd);
+
+
+
+
+    resize(original_templ5,templ5_1st,Size(250,250),0,0);
+    resize(original_templ5, templ5_2nd, Size(120,120), 0, 0);
+    namedWindow( "templ5_2nd", CV_WINDOW_AUTOSIZE );
+    imshow("templ5_2nd",templ5_2nd);
+    resize(original_templ5, templ5_3rd, Size(150,150), 0, 0);
+    namedWindow( "templ5_3rd", CV_WINDOW_AUTOSIZE );
+    imshow("templ5_3rd",templ5_3rd);
       
 
      namedWindow( image_window, CV_WINDOW_AUTOSIZE );
