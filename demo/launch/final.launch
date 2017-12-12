@@ -1,11 +1,5 @@
 <launch>
-    <node pkg="key_teleop" type="key_teleop.py" name="key_teleop" output="screen" launch-prefix="xterm -e">
-        <!--<remap from="~key_vel" to="/vrep/cmd_vel"/>-->
-    </node>
-
-    <!--<node pkg="rostopic" type="rostopic" name="rostopic" args="pub /vrep/laser_switch std_msgs/Bool 1"/>-->
-    <node pkg="rostopic" type="rostopic" name="rostopic" args="pub /vrep/camera_switch std_msgs/Bool 0"/>
-
+    <!--Part I building the map-->
     <param name="/use_sim_time" value="false"/>
 
     <arg name="tf_map_scanmatch_transform_frame_name" default="scanmatcher_frame"/>
@@ -38,7 +32,7 @@
         <param name="update_factor_free" value="0.4"/>
         <param name="update_factor_occupied" value="0.9"/>
         <param name="map_update_distance_thresh" value="0.4"/>
-        <param name="map_update_angle_thresh" value="0.06"/>
+        <param name="map_update_angle_thresh" value="0.01"/>
         <param name="laser_z_min_value" value="-1.0"/>
         <param name="laser_z_max_value" value="1.0"/>
 
@@ -55,12 +49,35 @@
 
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find demo)/rviz/final.rviz"/>
 
-    <!--if (sim_call_type==sim_childscriptcall_initialization) then-->
-        <!--clockPub= simExtRosInterface_advertise('/clock','rosgraph_msgs/Clock')-->
-    <!--end-->
+    <!--Part II Drive around -->
+    <node pkg="key_teleop" type="key_teleop.py" name="key_teleop" output="screen" launch-prefix="xterm -e"/>
 
-    <!--if (sim_call_type==sim_childscriptcall_sensing) then-->
-        <!--simExtRosInterface_publish(clockPub,{clock=simGetSimulationTime()})-->
-    <!--end-->
+    <node pkg="rostopic" type="rostopic" name="rostopic_las" args="pub /vrep/laser_switch std_msgs/Bool 1" output="screen"/>
+    <node pkg="rostopic" type="rostopic" name="rostopic_cam" args="pub /vrep/camera_switch std_msgs/Bool 1" output="screen"/>
+
+    <!--Part III image recognition-->
+    <node pkg="flip_image" type="flip_image_node" name="flip_image_node" output="screen"/>
+
+    <node pkg="image_recognition" type="image_recognition_node" name="image_recognition_node" output="screen">
+    </node>
+
+    <!--Part IV follow the ball-->
+    <node pkg="ball_follower" type="ball_follower_node" name="ball_follower_node" output="screen">
+        <param name="Gain_angle" type="double" value="1.0"/>
+        <param name="Kp_angle" type="double" value="-0.03"/>
+        <param name="Kd_angle" type="double" value="0.0"/>
+        <param name="Ki_angle" type="double" value="0.0"/>
+        <param name="vel_offset" type="double" value="0.5"/>
+        <param name="dis_offset" type="double" value="230.0"/>
+        <param name="Kp_vel" type="double" value="-0.01"/>
+        <param name="Kd_vel" type="double" value="0"/>
+        <param name="Ki_vel" type="double" value="0.0"/>
+        <param name="lower_bound_color_b" type="int" value="0"/>
+        <param name="lower_bound_color_g" type="int" value="180"/>
+        <param name="lower_bound_color_r" type="int" value="180"/>
+        <param name="upper_bound_color_b" type="int" value="80"/>
+        <param name="upper_bound_color_g" type="int" value="255"/>
+        <param name="upper_bound_color_r" type="int" value="255"/>
+    </node>
 
 </launch>

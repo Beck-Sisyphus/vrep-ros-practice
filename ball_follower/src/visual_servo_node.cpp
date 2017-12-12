@@ -68,7 +68,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         Rect bound = boundingRect(contours[largest_idx]);
         rectangle(frame_filtered, bound, Scalar(100, 255, 100), 5, 8, 0);
 
-        imshow("filtered", frame_filtered);
+//        imshow("filtered", frame_filtered);
         angle_gap = bound.x + bound.width / 2 - frame_filtered.cols / 2;
         distance_gap = (float)(sqrt(bound.area()) - dis_offset);
 //        cout << "x: " << angle_gap << endl;
@@ -82,8 +82,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "ball_follower");
     ros::NodeHandle n("~");
 
-    ros::Subscriber sub = n.subscribe("/flipped_image", 100, img_callback);
-    pub_cmd = n.advertise<geometry_msgs::Twist>("/vrep/cmd_vel", 100);
+    ros::Subscriber sub = n.subscribe("/flipped_image", 2, img_callback);
+    pub_cmd = n.advertise<geometry_msgs::Twist>("/vrep/cmd_vel", 10);
 
     int r_lower, g_lower, b_lower, r_upper, g_upper, b_upper;
     n.param("Kp_angle", Kp_angle, 0.01);
@@ -114,6 +114,8 @@ int main(int argc, char **argv)
     vel_pid.Kd = (float)Kd_vel;
     arm_pid_init_f32(&vel_pid, 0);
     distance_gap = 0;
+
+    target_detected = false;
 
     /**
      * 100 Hz control loop
