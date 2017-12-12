@@ -6,6 +6,13 @@
 #include <cmath>
 #include <iostream>
 
+Mat img; Mat templ; Mat result;
+
+char* image_window = "Source Image";
+char* result_window = "Result window";
+
+int match_method = CV_TM_SQDIFF ;
+int max_Trackbar = 5;
 
 
 void MatchingMethod( int, void* )

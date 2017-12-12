@@ -5,6 +5,7 @@
 #include <sensor_msgs/Image.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Pose.h>
+#include <visualization_msgs/Marker.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -12,7 +13,6 @@
 #include <opencv2/core/core.hpp>
 #include <math.h>
 #include <cmath>
-// #include "template_matching.h"
 using namespace cv;
 ros::Publisher pub_cmd;
 
@@ -145,18 +145,46 @@ else{
   }
 
   if(dis){
-  rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
- // rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
-   geometry_msgs::Pose message;
-   message.position.x = matchLoc.x;
-   message.position.y = matchLoc.y;
-   message.position.z = 0;
-   message.orientation.x  = matchLoc.x + templ.cols;
-   message.orientation.y = matchLoc.y + templ.rows;
-   message.orientation.z = 0;
-   message.orientation.w =0;
 
-   pub_cmd.publish(message);
+  rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+  rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+   
+
+   double real_edge = 512/(templ.cols);
+
+   double tan225 = 0.4142135624;
+   double distance = real_edge/(2*tan225);
+
+   double position = 512/2 - (matchLoc.x+ (templ.cols/2));
+
+   visualization_msgs::Marker marker;
+    marker.header.frame_id = "camera_link";
+    marker.header.stamp = ros::Time();
+   marker.ns = "my_namespace";
+   marker.id = 0;
+   marker.type = visualization_msgs::Marker::SPHERE;
+   marker.action = visualization_msgs::Marker::ADD;
+   marker.pose.position.x = -(position);
+   marker.pose.position.y = 0.0;
+   marker.pose.position.z = distance;
+  marker.pose.orientation.x = 0.0;
+  marker.pose.orientation.y = 0.0;
+  marker.pose.orientation.z = 0.0;
+  marker.pose.orientation.w = 1.0;
+  marker.scale.x = 1;
+  marker.scale.y = 0.1;
+  marker.scale.z = 0.1;
+  marker.color.a = 1.0; 
+  marker.color.r = 0.0;
+  marker.color.g = 1.0;
+  marker.color.b = 0.0;
+
+  pub_cmd.publish(marker);
+
+
+
+
+
 
 }
 
@@ -208,7 +236,7 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "image_recognition");
     ros::NodeHandle n("~");
-    pub_cmd = n.advertise<geometry_msgs::Pose>("image_reconition_result",100);
+    pub_cmd = n.advertise<visualization_msgs::Marker>("image_reconition_result",100);
 
   
 
@@ -276,8 +304,7 @@ int main(int argc, char **argv)
      namedWindow( image_window, CV_WINDOW_AUTOSIZE );
      namedWindow( result_window, CV_WINDOW_AUTOSIZE );
 
-     namedWindow( image_window, CV_WINDOW_AUTOSIZE );
-     namedWindow( result_window, CV_WINDOW_AUTOSIZE );
+     
 
      
      
